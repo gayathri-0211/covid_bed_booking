@@ -108,7 +108,6 @@ def usersignup():
         if user or emailUser:
             flash("Email or srfid is already taken","warning")
             return render_template("usersignup.html")
-        #new_user=db.engine.execute(f"INSERT INTO 'user'('srfid','email','dob') VALUES('{srfid}','{email}','{encpassword}')")
         new_user = User(srfid=srfid, email=email, dob=encpassword)
         db.session.add(new_user)
         db.session.commit()
