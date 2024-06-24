@@ -73,10 +73,20 @@ class User(UserMixin,db.Model):
 
 #model for hospitaluser table
 class Hospitaluser(UserMixin,db.Model):
-    hid=db.Column(db.Integer,primary_key=True)
+    id=db.Column(db.Integer,primary_key=True)
     hcode=db.Column(db.String(20))
     email=db.Column(db.String(100))
     password=db.Column(db.String(1000))
+
+#model for hospitaldata table
+class Hospitaldata(db.Model):
+    id=db.Column(db.Integer,primary_key=True)
+    hcode=db.Column(db.String(200),unique=True)
+    hname=db.Column(db.String(200))
+    normalbeds=db.Column(db.Integer)
+    hicubeds=db.Column(db.Integer)
+    icubeds=db.Column(db.Integer)
+    ventbeds=db.Column(db.Integer)
 
               #<---------------------end of database models--------------------->
 
@@ -167,7 +177,7 @@ def hospitalUser():
                 new_user =Hospitaluser(hcode=hcode, email=email, password=encpassword)
                 db.session.add(new_user)
                 db.session.commit()
-                mail.send_message('COVID CARE CENTRE',sender=params['gmail-user'],recipients=[email],body=f"Welcome to Bed Safe thanks for choosing us.Your Hospital Details are updated.\nYour Login Credentials are:\nEmail Address: {email}\nPassword: {password}\n\n\n Do not share your password\n\n\nThank You....")
+                mail.send_message('COVID CARE CENTRE',sender=params['gmail-user'],recipients=[email],body=f"Welcome to Bed Safe thanks for choosing us.Your Hospital Details are updated.\nYour Login Credentials are:\nEmail Address: {email}\nPassword: {password}\nHospital Code: {hcode}\n\n\n Do not share your password\n\n\nThank You....")
                 flash("Data is successfully added","info")
                 return render_template("addHosUser.html")
     else:
@@ -192,6 +202,31 @@ def hospitallogin():
             flash("Invalid Credentials","danger")
             return render_template("hospitallogin.html")       
     return render_template("hospitallogin.html")
+
+#route for addhospital data page
+@app.route("/addhospitalinfo",methods=['POST','GET'])
+def addhospitalinfo():
+    if request.method=="POST":
+        hcode=request.form.get('hcode')
+        hname=request.form.get('hname')
+        normalbeds=request.form.get('normalbeds')
+        hicubeds=request.form.get('hicubeds')
+        icubeds=request.form.get('icubeds')
+        ventbeds=request.form.get('ventbeds')
+        hcode=hcode.upper()
+        huser=Hospitaluser.query.filter_by(hcode=hcode).first()
+        hduser=Hospitaldata.query.filter_by(hcode=hcode).first()
+        if hduser:
+            flash("Data is Already Present you can update it..","primary")
+            return render_template("hospitaldata.html")
+        if huser:
+            new_user =Hospitaldata(hcode=hcode, hname=hname, normalbeds=normalbeds, hicubeds=hicubeds, icubeds=icubeds, ventbeds=ventbeds)
+            db.session.add(new_user)
+            db.session.commit()
+            flash("Data is Added","success")
+        else:
+            flash("Hospital Code Does Not Exist","warning")
+    return render_template("hospitaldata.html")
 
 
 #logout method
