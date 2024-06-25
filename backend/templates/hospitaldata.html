@@ -57,16 +57,16 @@
                       <h4 class="card-title text-center text-dark">Hospital Data</h4><br>
                       <div class="card " style="width: 24rem;">
                         <ul class="list-group list-group-flush">
-                          <li class="list-group-item">Hospital Code: </li>
-                          <li class="list-group-item">Hospital Name: </li>
-                          <li class="list-group-item">Number of Normal beds available: </li>
-                          <li class="list-group-item">Number of H.I.C.U beds available: </li>
-                          <li class="list-group-item">Number of I.C.U beds available: </li>
-                          <li class="list-group-item">Number of Ventilator beds available: </li>
+                          <li class="list-group-item">Hospital Code: <b>{{postsdata.hcode}}</b></li>
+                          <li class="list-group-item">Hospital Name: <b>{{postsdata.hname}}</b></li>
+                          <li class="list-group-item">Number of Normal beds available: <b>{{postsdata.normalbeds}}</b></li>
+                          <li class="list-group-item">Number of H.I.C.U beds available: <b>{{postsdata.hicubeds}}</b></li>
+                          <li class="list-group-item">Number of I.C.U beds available: <b>{{postsdata.icubeds}}</b></li>
+                          <li class="list-group-item">Number of Ventilator beds available: <b>{{postsdata.ventbeds}}</b></li>
                         </ul>
                         <ul class="list-group list-group-flush text-center">
-                            <li class="list-group-item">Edit : <a href="/hedit"><i class="fa-solid fa-pen-to-square"></i></a></li>
-                            <li class="list-group-item">Delete : <a class="ml-4"   href="/hdelete" onclick="return confirm('Are you sure you want to delete the data?');"><i class="fa-solid fa-trash"></i></a></li>                           
+                            <li class="list-group-item">Edit : <a href="/hedit/{{postsdata.id}}"><i class="fa-solid fa-pen-to-square"></i></a></li>
+                            <li class="list-group-item">Delete : <a class="ml-4"   href="/hdelete/{{postsdata.id}}" onclick="return confirm('Are you sure you want to delete the data?');"><i class="fa-solid fa-trash"></i></a></li>                           
                         </ul>
                       </div>
                     </div>

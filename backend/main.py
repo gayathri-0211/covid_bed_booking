@@ -213,7 +213,9 @@ def hospitallogin():
 @app.route("/addhospitalinfo",methods=['POST','GET'])
 def addhospitalinfo():
     email=current_user.email
-    posts=Hospitaluser
+    posts=Hospitaluser.query.filter_by(email=email).first()
+    code=posts.hcode
+    postsdata=Hospitaldata.query.filter_by(hcode=code).first()
     if request.method=='POST':
         hcode=request.form.get('hcode')
         hname=request.form.get('hname')
@@ -226,7 +228,7 @@ def addhospitalinfo():
         hduser=Hospitaldata.query.filter_by(hcode=hcode).first()
         if hduser:
             flash("Data is already present you can update it","primary")
-            return render_template("hospitaldata.html")
+            return render_template("hospitaldata.html",postsdata=postsdata)
         if huser:
             new_user=Hospitaldata(hcode=hcode,hname=hname,normalbeds=normalbeds,hicubeds=hicubeds,icubeds=icubeds,ventbeds=ventbeds)
             db.session.add(new_user)
@@ -234,15 +236,28 @@ def addhospitalinfo():
             flash("Data is added","success")
         else:
             flash("Hospital code doesn't exist","warning")
-    return render_template("hospitaldata.html")
+    return render_template("hospitaldata.html",postsdata=postsdata)
         
             
 #route for editing hospital data
-# @app.route("/hedit/<string:id>",methods=['POST','GET'])
-# @login_required
-# def hedit(id):
-#     posts=Hospitaldata.query.filter_by(id=id).first()
-#     return render_template("hedit.html",posts=posts)
+@app.route("/hedit/<string:id>",methods=['POST','GET'])
+@login_required
+def hedit(id):
+    posts=Hospitaldata.query.filter_by(id=id).first()
+    if request.method=='POST':
+        hcode=request.form.get('hcode')
+        hname=request.form.get('hname')
+        normalbeds=request.form.get('normalbeds')
+        hicubeds=request.form.get('hicubeds')
+        icubeds=request.form.get('icubeds')
+        ventbeds=request.form.get('ventbeds')
+        hcode=hcode.upper()
+        sql = text(f"UPDATE hospitaldata SET hcode=:hcode, hname=:hname, normalbeds=:normalbeds, hicubeds=:hicubeds, icubeds=:icubeds, ventbeds=:ventbeds WHERE id=:id")
+        db.session.execute(sql, {"hcode": hcode, "hname": hname, "normalbeds": normalbeds, "hicubeds": hicubeds, "icubeds": icubeds, "ventbeds": ventbeds, "id": id})
+        db.session.commit()
+        flash("Data is updated","success")
+        return redirect("/addhospitalinfo")
+    return render_template("hedit.html",posts=posts)
     
 #logout method
 @app.route('/logout')
