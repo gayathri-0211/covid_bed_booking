@@ -13,7 +13,6 @@
   <link href="static/assets/img/favicon.png" rel="icon">
   <link href="static/assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
-
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Roboto:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
@@ -29,6 +28,7 @@
 
   <!-- Template Main CSS File -->
   <link href="static/assets/css/style.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 </head>
 
@@ -41,55 +41,83 @@
         <i class="bi bi-clock"></i> 24*7 Available
       </div>
       <div class="d-flex align-items-center">
-        <i class="bi bi-phone"></i> Call us now +919492104464
+        <i class="bi bi-phone"></i> Call us now +91xxxxxxxxxx
       </div>
     </div>
   </div>
 
-  <!-- ======= Header ======= -->
-  <header id="header" class="fixed-top">
-    <div class="container d-flex align-items-center">
+    <!-- ======= Header ======= -->
+    <header id="header" class="fixed-top">
+      <div class="container d-flex align-items-center">
+  
+        <a href="/" class="logo me-auto"><i class="fa-solid fa-bed"></i> <b>Bed Connect</b></a>
+        <!-- Uncomment below if you prefer to use an image logo -->
+        <!-- <h1 class="logo me-auto"><a href="index.html">Medicio</a></h1> -->
+  
+        <nav id="navbar" class="navbar order-last order-lg-0">
+          <ul>
+            <li><a class="nav-link scrollto " href="/">Home</a></li>
+  
+            <li><a class="nav-link scrollto" href="/pdetails">Patients Details</a></li>
+            <li><a class="nav-link scrollto" href="/slotbooking">Available Beds</a></li>
+            <li><a class="nav-link scrollto" href="/triggers">Operations</a></li>
+  
+  {% if current_user.is_authenticated  and current_user.hcode %}
+  
+            <li class="dropdown"><a href="/userlogin"><span>Welcome {{current_user.email}}</span> <i class="bi bi-chevron-down"></i></a>
+              <ul>
+  
+                <li><a href="/addhospitalinfo">Add Hospital Data</a></li>
+                <li><a href="/logout">Logout</a></li>
+        
+             
+              </ul>
+            </li>
+  {% elif session.get('is_admin') %}
+            <li class="dropdown">
+                <a href="#"><span>Welcome {{ session.get('admin_user') }}</span> <i class="bi bi-chevron-down"></i></a>
+                <ul>
+                    <!-- <li><a href="//addHospitalUser">Add Hospital User</a></li> -->
+                    <li><a href="/logout">Logout</a></li>
+                </ul>
+            </li>
+  {% elif current_user.is_authenticated and current_user.srfid %}
+             <li class="dropdown"><a href="/login"><span>Welcome {{current_user.email}}</span> <i class="bi bi-chevron-down"></i></a>
+              <ul>
+  
+                <li><a href="/slotbooking">Book Slot</a></li>
+                <li><a href="/logout">Logout</a></li>
+        
+             
+              </ul>
+            </li>
+  {% else %}
+            <li class="dropdown"><a href="/userlogin"><span>Sign In</span> <i class="bi bi-chevron-down"></i></a>
+              <ul>
+                <li><a href="/userlogin">User Login</a></li>
+                <li><a href="/hospitallogin">Hospital Login</a></li>
+                <li><a href="/admin">Admin Login</a></li>
+             
+              </ul>
+            </li>
+  
+  {% endif %}
+            <!-- <li><a class="nav-link scrollto" href="#contact">Contact</a></li> -->
+          </ul>
+          <i class="bi bi-list mobile-nav-toggle"></i>
+        </nav><!-- .navbar -->
+  
+        <a href="/slotbooking" class="appointment-btn scrollto"><span class="d-none d-md-inline">Book your Bed Now</a>
+  
+      </div>
+    </header><!-- End Header -->
 
-      <a href="index.html" class="logo me-auto"><i class="fa-solid fa-bed-pulse"></i>Bed Safe</a>
-      <!-- Uncomment below if you prefer to use an image logo -->
-      <!-- <h1 class="logo me-auto"><a href="index.html">Medicio</a></h1> -->
-
-      <nav id="navbar" class="navbar order-last order-lg-0">
-        <ul>
-          <li><a class="nav-link scrollto " href="/">Home</a></li>
-          <li><a class="nav-link scrollto" href="#departments">Patient Details</a></li>
-          <li><a class="nav-link scrollto" href="#doctors">Available Beds</a></li>
-
-{% if current_user.is_authenticated %}
-          <li class="dropdown"><a href="/userlogin"><span>Welcome {{current_user.email}}</span> <i class="bi bi-chevron-down"></i></a>
-            <ul>
-              <li><a href="/logout">Logout</a></li>
-            </ul>
-          </li>
-{% else %}         
-          <li class="dropdown"><a href="/userlogin"><span>Sign In</span> <i class="bi bi-chevron-down"></i></a>
-            <ul>
-              <li><a href="/userlogin">User Login</a></li>
-              <li><a href="/hospitallogin">Hospital Login</a></li>
-              <li><a href="/admin">Admin Login</a></li>
-            </ul>
-          </li>
-{% endif %}
-
-          <li><a class="nav-link scrollto" href="#contact">Contact</a></li>
-        </ul>
-        <i class="bi bi-list mobile-nav-toggle"></i>
-      </nav><!-- .navbar -->
-
-      <a href="#appointment" class="appointment-btn scrollto"><span class="d-none d-md-inline">Bed Booking Slot</span> Book Now</a>
-
-    </div>
-  </header><!-- End Header -->
-
+  <main id="main">
   {% block body %}
 
-
   {% endblock body %}
+
+  </main><!-- End #main -->
 
   <div id="preloader"></div>
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>

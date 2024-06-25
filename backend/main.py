@@ -13,10 +13,6 @@ import logging
 from flask_mail import Mail
 from functools import wraps
 
-
-engine=create_engine('mysql://root:@127.0.0.1/covid')
-connection=engine.connect()
-
 # mydatabase connection
 local_server=True
 app=Flask(__name__)
@@ -55,7 +51,17 @@ mail=Mail(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    if session.get("is_hospital"):
+        return Hospitaluser.query.get(int(user_id))
+    else:
+        return User.query.get(int(user_id))
+    
+@app.context_processor
+def inject_user():
+    return dict(current_user=current_user)
+
+engine=create_engine('mysql://root:@127.0.0.1/covid')
+connection=engine.connect()
     
                #<--------------start of database models------------------->
 
@@ -79,7 +85,7 @@ class Hospitaluser(UserMixin,db.Model):
     password=db.Column(db.String(1000))
 
 #model for hospitaldata table
-class Hospitaldata(db.Model):
+class Hospitaldata(UserMixin,db.Model):
     id=db.Column(db.Integer,primary_key=True)
     hcode=db.Column(db.String(200),unique=True)
     hname=db.Column(db.String(200))
@@ -194,7 +200,7 @@ def hospitallogin():
         user=Hospitaluser.query.filter_by(email=email).first()
         if user and check_password_hash(user.password,password):
             login_user(user)
-            session['user-id']=user.id
+            session['user_id']=user.id
             session['is_hospital']=True
             flash("Login Success","success")
             return render_template("index.html")
@@ -203,10 +209,12 @@ def hospitallogin():
             return render_template("hospitallogin.html")       
     return render_template("hospitallogin.html")
 
-#route for addhospital data page
+#route for adding data of hospital
 @app.route("/addhospitalinfo",methods=['POST','GET'])
 def addhospitalinfo():
-    if request.method=="POST":
+    email=current_user.email
+    posts=Hospitaluser
+    if request.method=='POST':
         hcode=request.form.get('hcode')
         hname=request.form.get('hname')
         normalbeds=request.form.get('normalbeds')
@@ -217,18 +225,25 @@ def addhospitalinfo():
         huser=Hospitaluser.query.filter_by(hcode=hcode).first()
         hduser=Hospitaldata.query.filter_by(hcode=hcode).first()
         if hduser:
-            flash("Data is Already Present you can update it..","primary")
+            flash("Data is already present you can update it","primary")
             return render_template("hospitaldata.html")
         if huser:
-            new_user =Hospitaldata(hcode=hcode, hname=hname, normalbeds=normalbeds, hicubeds=hicubeds, icubeds=icubeds, ventbeds=ventbeds)
+            new_user=Hospitaldata(hcode=hcode,hname=hname,normalbeds=normalbeds,hicubeds=hicubeds,icubeds=icubeds,ventbeds=ventbeds)
             db.session.add(new_user)
             db.session.commit()
-            flash("Data is Added","success")
+            flash("Data is added","success")
         else:
-            flash("Hospital Code Does Not Exist","warning")
+            flash("Hospital code doesn't exist","warning")
     return render_template("hospitaldata.html")
-
-
+        
+            
+#route for editing hospital data
+# @app.route("/hedit/<string:id>",methods=['POST','GET'])
+# @login_required
+# def hedit(id):
+#     posts=Hospitaldata.query.filter_by(id=id).first()
+#     return render_template("hedit.html",posts=posts)
+    
 #logout method
 @app.route('/logout')
 @login_required
