@@ -18,6 +18,10 @@ local_server=True
 app=Flask(__name__)
 app.secret_key="gayathri"
 
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 # this is for getting the unique user access
 login_manager=LoginManager(app)
 login_manager.init_app(app)
@@ -62,6 +66,15 @@ def inject_user():
 
 engine=create_engine('mysql://root:@127.0.0.1/covid')
 connection=engine.connect()
+
+def hospitallogin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session or not session.get('is_hospital', False):
+            flash("You need to be logged in to access this page.", "danger")
+            return redirect(url_for('hospitallogin'))
+        return f(*args, **kwargs)
+    return decorated_function
     
                #<--------------start of database models------------------->
 
@@ -93,6 +106,27 @@ class Hospitaldata(UserMixin,db.Model):
     hicubeds=db.Column(db.Integer)
     icubeds=db.Column(db.Integer)
     ventbeds=db.Column(db.Integer)
+
+#model for bookingpatient table
+class Bookingpatient(db.Model,UserMixin):
+    id=db.Column(db.Integer,primary_key=True)
+    srfid=db.Column(db.String(50),unique=True)
+    bedtype=db.Column(db.String(50))
+    hcode=db.Column(db.String(50))
+    spo2=db.Column(db.Integer)
+    pname=db.Column(db.String(50))
+    pphone=db.Column(db.String(12))
+    paddress=db.Column(db.String(100))
+
+class Trig(db.Model,UserMixin):
+    id=db.Column(db.Integer,primary_key=True)
+    hcode=db.Column(db.String(200))
+    normalbeds=db.Column(db.Integer)
+    hicubeds=db.Column(db.Integer)
+    icubeds=db.Column(db.Integer)
+    vbeds=db.Column(db.Integer)
+    querys=db.Column(db.String(50))
+    date=db.Column(db.String(50))
 
               #<---------------------end of database models--------------------->
 
@@ -258,6 +292,108 @@ def hedit(id):
         flash("Data is updated","success")
         return redirect("/addhospitalinfo")
     return render_template("hedit.html",posts=posts)
+
+#route for deleting hospital data
+@app.route("/hdelete/<string:id>",methods=['POST','GET'])
+@login_required
+def hdelete(id):
+    # Query the record by ID
+    record_to_delete = Hospitaldata.query.get_or_404(id)
+    try:
+        # Delete the record
+        db.session.delete(record_to_delete)
+        db.session.commit()
+        flash("Data deleted successfully", "success")
+    except Exception as e:
+        db.session.rollback()  # Roll back the changes on error
+        flash(f"Failed to delete data: {e}", "danger")
+    return redirect(url_for('addhospitalinfo'))
+
+#route for slotbooking page
+@app.route("/slotbooking",methods=['POST','GET'])
+@login_required
+def slotbooking():
+    query = Hospitaldata.query.all()
+    if request.method=="POST":
+        srfid = request.form.get('srfid')
+        bedtype = request.form.get('bedtype')
+        hcode = request.form.get('hcode')
+        spo2 = request.form.get('spo2')
+        pname = request.form.get('pname')
+        pphone = request.form.get('pphone')
+        paddress = request.form.get('paddress')
+        code = hcode
+        try:
+            # Query the record by hcode
+            hospital_record = Hospitaldata.query.filter_by(hcode=code).first()
+            if not hospital_record:
+                flash("Hospital record not found", "danger")
+                return redirect(url_for('some_view'))  # Replace 'some_view' with the appropriate view name
+            # Update the appropriate bed type
+            if bedtype == "Normalbeds":
+                if hospital_record.normalbeds > 0:
+                    hospital_record.normalbeds -= 1
+                    booking_successful = True
+                else:
+                    booking_successful = False
+                    flash("No normal beds available in this hospital", "warning")
+            elif bedtype == "HICUbed":
+                if hospital_record.hicubeds > 0:
+                    hospital_record.hicubeds -= 1
+                    booking_successful = True
+                else:
+                    booking_successful = False
+                    flash("No HICU beds available in this hospital", "warning")
+            elif bedtype == "ICUbed":
+                if hospital_record.icubeds > 0:
+                    hospital_record.icubeds -= 1
+                    booking_successful = True
+                else:
+                    booking_successful = False
+                    flash("No ICU beds available in this hospital", "warning")
+            elif bedtype == "Ventilatorbed":
+                if hospital_record.ventbeds > 0:
+                    hospital_record.ventbeds -= 1
+                    booking_successful = True
+                else:
+                    booking_successful = False
+                    flash("No ventilator beds available in this hospital", "warning")
+            else:
+                booking_successful = False
+                flash("Invalid bed type", "danger")
+            if booking_successful:
+                db.session.commit()
+                # Insert patient data into Bookingpatient table
+                new_patient = Bookingpatient(
+                    srfid=srfid,
+                    bedtype=bedtype,
+                    hcode=hcode,
+                    spo2=spo2,
+                    pname=pname,
+                    pphone=pphone,
+                    paddress=paddress
+                )
+                db.session.add(new_patient)
+                db.session.commit()
+                flash("Your bed slot is booked successfully", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"An error occurred: {e}", "danger")
+    return render_template("booking.html", query = query)
+
+# patient details page routing
+@app.route("/pdetails", methods=['GET'])
+def pdetails():
+    code=current_user.srfid
+    data=Bookingpatient.query.filter_by(srfid=code).first()
+    return render_template("details.html",data=data)
+  
+@app.route("/triggers")
+def triggers():
+    query=Trig.query.all()
+    return render_template("triggers.html",query=query)
+
+            # <------------routing end------>
     
 #logout method
 @app.route('/logout')
@@ -275,6 +411,13 @@ def logoutadmin():
     flash("Logout Successful","primary")
     return render_template("admin.html")
 
+# Hospital User logout page routing
+@app.route("/logouthospitaluser")
+def logouthospitaluser():
+    session.clear()
+    # session.pop('user_id', None)  # Clear user ID from session
+    flash("You have been logged out", "info")
+    return redirect(url_for('hospitallogin'))  # Redirect to login page after logout
 
 # testing whether db is connected or not
 @app.route("/test")

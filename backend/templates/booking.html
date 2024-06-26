@@ -1,0 +1,88 @@
+{% extends "navbar.html" %}
+{% block title %}Slot Booking{% endblock title %}
+{% block body %}<br><br><br><br><br><br>
+<div class="container" mt-4>
+   
+    <div class="display-4 text-center text-info"><b>Book Your Bed Slot</b></div>
+    <br>
+    <div class="row">
+        <div class="col-md-4">
+           
+            <div class="card">
+                <br>
+                {% include "message.html" %}
+                <h4 class="text-center text-dark">Covid Care Centre</h4>
+                <div class="card-body ">
+                    <form action="/slotbooking" method="post">
+                        <div class="form-group">
+                            <input type="text" class="form-control mt-2" name="srfid" value="{{current_user.srfid}}" readonly required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <select id="bedtype" class="form-control mt-2" name="bedtype" required>
+                                <option selected>Choose Bed Type</option>
+                                <option value="Normalbed">Normal bed</option>
+                                <option value="HICUbed">H.I.C.U bed</option>
+                                <option value="ICUbed">I.C.U bed</option>
+                                <option value="Ventilatorbed">Ventilator bed</option>
+                            </select>
+                        </div>
+                       
+                        <div class="form-group">
+                            <input type="text" class="form-control mt-2" name="hcode" placeholder="Enter Hospital Code" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="number" class="form-control mt-2" name="spo2" placeholder="Enter Oxygen Level" required>
+                        </div>
+                       
+                        <div class="form-group">
+                            <input type="text" class="form-control mt-2" name="pname" placeholder="Enter Patient Name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="text" class="form-control mt-2" name="pphone" placeholder="Enter Patient Phone Number" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="text" class="form-control mt-2" name="paddress" placeholder="Enter Patient Address" required>
+                        </div>
+                        <br>
+                        <div class="text-center"> <!-- Center aligns the button -->
+                            <button class="btn btn-info" type="submit">Book Now</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <h3 class="text-center text-white bg-dark">Available Beds</h3>
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Hospital Code</th>
+                    <th scope="col">Hospital Name</th>
+                    <th scope="col">Normal Beds</th>
+                    <th scope="col">H.I.C.U Beds</th>
+                    <th scope="col">I.C.U Beds</th>
+                    <th scope="col">Ventilator Beds</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for q in query %}
+                  <tr>
+                    <td>{{q.hcode}}</td>
+                    <td>{{q.hname}}</td>
+                    <td>{{q.normalbeds}}</td>
+                    <td>{{q.hicubeds}}</td>
+                    <td>{{q.icubeds}}</td>
+                    <td>{{q.ventbeds}}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>     
+        </div>
+    </div>
+    </div><br><br>
+</div>
+{% endblock body %}

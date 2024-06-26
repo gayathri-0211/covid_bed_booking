@@ -1,0 +1,42 @@
+{% extends 'navbar.html' %}
+{% block title %} Hospital User {% endblock title %}
+{% block body %}
+<div class="bg-secondary">
+<br><br><br><br><br><br>
+<!-- <div class="display-4 text-center text-info"><b>Triggers</b></div><br><br><br> -->
+
+
+<div class="container mt-2">
+    <table class="table table-dark">
+        <thead>
+            <h3 class="text-center text-white bg-dark">Triggered Data</h3>
+          <tr>
+            <th scope="col">Hospital Code</th>
+
+            <th scope="col">Normal Beds</th>
+            <th scope="col">H.I.C.U Beds</th>
+            <th scope="col">I.C.U Beds</th>
+            <th scope="col">Ventilator Beds</th>
+            <th scope="col">Action</th>
+            <th scope="col">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for q in query %}
+          <tr>
+            <td>{{q.hcode}}</td>
+
+            <td>{{q.normalbeds}}</td>
+            <td>{{q.hicubeds}}</td>
+            <td>{{q.icubeds}}</td>
+            <td>{{q.ventbeds}}</td>
+            <td>{{q.querys}}</td>
+            <td>{{q.date}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+</div>
+
+{% endblock body %}
