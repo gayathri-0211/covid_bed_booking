@@ -23,9 +23,9 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # this is for getting the unique user access
-login_manager=LoginManager(app)
-login_manager.init_app(app)
-login_manager.login_view='userlogin'
+login_manager=LoginManager(app) #creates an instance of LoginManager and inistialises to application of app-manages userlogins,essentials
+login_manager.init_app(app) #attaches instance to flask application instance app
+login_manager.login_view='userlogin' #When a user attempts to access a protected page without being authenticated, Flask-Login will redirect them to this view
 
 
 # app.config['SQLALCHEMY_DATABASE_URI']='mysql://username:password@loacalhost/databasename'
@@ -64,8 +64,8 @@ def load_user(user_id):
 def inject_user():
     return dict(current_user=current_user)
 
-engine=create_engine('mysql://root:@127.0.0.1/covid')
-connection=engine.connect()
+engine=create_engine('mysql://root:@127.0.0.1/covid') #creates an instance named engine for storing data
+connection=engine.connect() #connects data with the database
 
 def hospitallogin_required(f):
     @wraps(f)
